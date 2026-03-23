@@ -1,4 +1,4 @@
-package com.awaiba.products;
+package com.awaiba.products.model;
 
 public record Product(String productName) {}
 

@@ -1,5 +1,6 @@
-package com.awaiba.products;
+package com.awaiba.products.service;
 
+import com.awaiba.products.model.Product;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
