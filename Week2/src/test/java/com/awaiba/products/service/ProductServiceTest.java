@@ -1,69 +1,70 @@
 package com.awaiba.products.service;
 
 import com.awaiba.products.model.Product;
-import org.junit.jupiter.api.BeforeEach;
+import com.awaiba.products.repository.ProductRepository;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class ProductServiceTest {
+    @Mock
+    private ProductRepository productRepository;
+
+    @InjectMocks
     private ProductService productService;
 
-    @BeforeEach
-    void setUp() {
-        productService = new ProductService();
-    }
+//    @BeforeEach
+//    void setUp() {
+//        productService = new ProductService();
+//    }
 
     @Test
     void shouldAddProduct() {
         Product p = new Product("Test");
         productService.add(p);
 
-        assertTrue(productExists(productService, "Test"));
-
+        verify(productRepository).save(p);
     }
 
     @Test
     void shouldDeleteProduct() {
-        Product p = new Product("Test");
-        productService.add(p);
+        when(productRepository.deleteByName("Test")).thenReturn(true);
 
         boolean returnVal = productService.delete("Test");
+
         assertTrue(returnVal);
-
-        assertFalse(productExists(productService, "Test"));
+        verify(productRepository).deleteByName("Test");
     }
 
-
-    @Test
-    void shouldReturnAllProducts() {
-        Product p1 = new Product("Test1");
-        productService.add(p1);
-
-        Product p2 = new Product("Test2");
-        productService.add(p2);
-
-        assertEquals(2, productService.getAll().size());
-    }
 
     @Test
     void shouldReturnFalseWhenDeletingNonExistentProduct() {
+        when(productRepository.deleteByName("NonExistentProduct")).thenReturn(false);
+
         boolean returnVal = productService.delete("NonExistentProduct");
+
         assertFalse(returnVal);
     }
 
-    boolean productExists(ProductService productService, String productName) {
-        return productService.getAll().stream().anyMatch(p -> p.productName().equals(productName));
-    }
-
     @Test
-    void shouldReturnEmptyListInitially() {
-        assertEquals(0,productService.getAll().size());
+    void shouldReturnEmptyListWhenRepositoryHasNoProducts() {
+        when(productRepository.findAll()).thenReturn(List.of());
+
+        assertEquals(0, productService.getAll().size());
     }
 
     @Test
     void shouldThrowIllegalArgumentExceptionDuringAddForNullValues(){
         assertThrows(IllegalArgumentException.class, () -> productService.add(null));
+        verifyNoInteractions(productRepository);
     }
 
     @Test
@@ -72,18 +73,32 @@ class ProductServiceTest {
         assertThrows(IllegalArgumentException.class, () -> productService.add(new Product(" ")));
         assertThrows(IllegalArgumentException.class, () -> productService.add(new Product("\n")));
         assertThrows(IllegalArgumentException.class, () -> productService.add(new Product("\t")));
+        verifyNoInteractions(productRepository);
     }
 
     @Test
     void shouldThrowIllegalArgumentExceptionDuringDeleteForNull() {
         assertThrows(IllegalArgumentException.class, () -> productService.delete(null));
+        verifyNoInteractions(productRepository);
     }
 
     @Test
     void shouldThrowIllegalArgumentExceptionDuringDeleteForEmptyOrBlankValues() {
-        assertThrows(IllegalArgumentException.class, () -> productService.delete(new String("")));
-        assertThrows(IllegalArgumentException.class, () -> productService.delete(new String(" ")));
-        assertThrows(IllegalArgumentException.class, () -> productService.delete(new String("\n")));
-        assertThrows(IllegalArgumentException.class, () -> productService.delete(new String("\t")));
+        assertThrows(IllegalArgumentException.class, () -> productService.delete(""));
+        assertThrows(IllegalArgumentException.class, () -> productService.delete(" "));
+        assertThrows(IllegalArgumentException.class, () -> productService.delete("\n"));
+        assertThrows(IllegalArgumentException.class, () -> productService.delete("\t"));
+        verifyNoInteractions(productRepository);
+    }
+
+    @Test
+    void shouldDelegateToRepositoryWhenGetAll() {
+        Product p = new Product("Test");
+        when(productRepository.findAll()).thenReturn(List.of(p));
+
+        List<Product> l = productService.getAll();
+
+        assertEquals(1, l.size());
+        verify(productRepository).findAll();
     }
 }
