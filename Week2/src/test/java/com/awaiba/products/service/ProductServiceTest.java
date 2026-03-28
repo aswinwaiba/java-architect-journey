@@ -60,4 +60,17 @@ class ProductServiceTest {
     void shouldReturnEmptyListInitially() {
         assertEquals(0,productService.getAll().size());
     }
+
+    @Test
+    void shouldThrowIllegalArgumentExceptionDuringAddForNullValues(){
+        assertThrows(IllegalArgumentException.class, () -> productService.add(null));
+    }
+
+    @Test
+    void shouldThrowIllegalArgumentExceptionDuringAddForEmptyOrBlankValues() {
+        assertThrows(IllegalArgumentException.class, () -> productService.add(new Product("")));
+        assertThrows(IllegalArgumentException.class, () -> productService.add(new Product(" ")));
+        assertThrows(IllegalArgumentException.class, () -> productService.add(new Product("\n")));
+        assertThrows(IllegalArgumentException.class, () -> productService.add(new Product("\t")));
+    }
 }
