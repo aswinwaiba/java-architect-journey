@@ -73,4 +73,17 @@ class ProductServiceTest {
         assertThrows(IllegalArgumentException.class, () -> productService.add(new Product("\n")));
         assertThrows(IllegalArgumentException.class, () -> productService.add(new Product("\t")));
     }
+
+    @Test
+    void shouldThrowIllegalArgumentExceptionDuringDeleteForNull() {
+        assertThrows(IllegalArgumentException.class, () -> productService.delete(null));
+    }
+
+    @Test
+    void shouldThrowIllegalArgumentExceptionDuringDeleteForEmptyOrBlankValues() {
+        assertThrows(IllegalArgumentException.class, () -> productService.delete(new String("")));
+        assertThrows(IllegalArgumentException.class, () -> productService.delete(new String(" ")));
+        assertThrows(IllegalArgumentException.class, () -> productService.delete(new String("\n")));
+        assertThrows(IllegalArgumentException.class, () -> productService.delete(new String("\t")));
+    }
 }
