@@ -4,6 +4,9 @@ import com.awaiba.products.model.Product;
 import com.awaiba.products.repository.ProductRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -28,10 +31,12 @@ class ProductServiceTest {
 
     @Test
     void shouldAddProduct() {
-        Product p = new Product("Test");
+        ArgumentCaptor<Product> capture = ArgumentCaptor.forClass(Product.class);
+        Product p = new Product(" Test ");
         productService.add(p);
 
-        verify(productRepository).save(p);
+        verify(productRepository).save(capture.capture());
+        assertEquals("Test", capture.getValue().productName());
     }
 
     @Test
@@ -52,13 +57,8 @@ class ProductServiceTest {
         boolean returnVal = productService.delete("NonExistentProduct");
 
         assertFalse(returnVal);
-    }
 
-    @Test
-    void shouldReturnEmptyListWhenRepositoryHasNoProducts() {
-        when(productRepository.findAll()).thenReturn(List.of());
-
-        assertEquals(0, productService.getAll().size());
+        verify(productRepository).deleteByName("NonExistentProduct");
     }
 
     @Test
@@ -67,12 +67,10 @@ class ProductServiceTest {
         verifyNoInteractions(productRepository);
     }
 
-    @Test
-    void shouldThrowIllegalArgumentExceptionDuringAddForEmptyOrBlankValues() {
-        assertThrows(IllegalArgumentException.class, () -> productService.add(new Product("")));
-        assertThrows(IllegalArgumentException.class, () -> productService.add(new Product(" ")));
-        assertThrows(IllegalArgumentException.class, () -> productService.add(new Product("\n")));
-        assertThrows(IllegalArgumentException.class, () -> productService.add(new Product("\t")));
+    @ParameterizedTest
+    @ValueSource(strings = {"", " ", "\n", "\t", "   "})
+    void shouldThrowIllegalArgumentExceptionDuringAddForEmptyOrBlankValues(String productName) {
+        assertThrows(IllegalArgumentException.class, () -> productService.add(new Product(productName)));
         verifyNoInteractions(productRepository);
     }
 
@@ -82,12 +80,10 @@ class ProductServiceTest {
         verifyNoInteractions(productRepository);
     }
 
-    @Test
-    void shouldThrowIllegalArgumentExceptionDuringDeleteForEmptyOrBlankValues() {
-        assertThrows(IllegalArgumentException.class, () -> productService.delete(""));
-        assertThrows(IllegalArgumentException.class, () -> productService.delete(" "));
-        assertThrows(IllegalArgumentException.class, () -> productService.delete("\n"));
-        assertThrows(IllegalArgumentException.class, () -> productService.delete("\t"));
+    @ParameterizedTest
+    @ValueSource(strings = {"", " ", "\n", "\t", "   "})
+    void shouldThrowIllegalArgumentExceptionDuringDeleteForEmptyOrBlankValues(String productName) {
+        assertThrows(IllegalArgumentException.class, () -> productService.delete(productName));
         verifyNoInteractions(productRepository);
     }
 

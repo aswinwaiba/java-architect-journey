@@ -24,7 +24,8 @@ public class ProductService {
         //TODO: Analyse What to do in case of duplicate names
         if(p == null) throw new IllegalArgumentException("Null value passed");
         if(p.productName().isBlank()) throw new IllegalArgumentException("Empty or blank name");
-        productRepository.save(p);
+        Product normalizedProduct = new Product(p.productName().strip());
+        productRepository.save(normalizedProduct);
     }
 
     public boolean delete(String productName) throws IllegalArgumentException{
