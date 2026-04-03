@@ -1,12 +1,10 @@
 package com.awaiba.products.service;
 
+import com.awaiba.products.exception.ProductNotFoundException;
 import com.awaiba.products.model.Product;
-import com.awaiba.products.repository.InMemoryProductRepository;
 import com.awaiba.products.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -28,11 +26,12 @@ public class ProductService {
         productRepository.save(normalizedProduct);
     }
 
-    public boolean delete(String productName) throws IllegalArgumentException{
+    public void delete(String productName) throws IllegalArgumentException, ProductNotFoundException {
         if(productName == null) throw new IllegalArgumentException("Null value passed");
         if(productName.isBlank()) throw new IllegalArgumentException("Empty or blank name");
 
-        return productRepository.deleteByName(productName);
+        if(! productRepository.deleteByName(productName))
+            throw new ProductNotFoundException(productName);
     }
 }
 

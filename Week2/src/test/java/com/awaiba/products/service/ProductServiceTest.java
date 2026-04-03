@@ -2,6 +2,7 @@ package com.awaiba.products.service;
 
 import com.awaiba.products.model.Product;
 import com.awaiba.products.repository.ProductRepository;
+import com.awaiba.products.exception.ProductNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -43,9 +44,8 @@ class ProductServiceTest {
     void shouldDeleteProduct() {
         when(productRepository.deleteByName("Test")).thenReturn(true);
 
-        boolean returnVal = productService.delete("Test");
+        assertDoesNotThrow(() -> productService.delete("Test"));
 
-        assertTrue(returnVal);
         verify(productRepository).deleteByName("Test");
     }
 
@@ -54,9 +54,7 @@ class ProductServiceTest {
     void shouldReturnFalseWhenDeletingNonExistentProduct() {
         when(productRepository.deleteByName("NonExistentProduct")).thenReturn(false);
 
-        boolean returnVal = productService.delete("NonExistentProduct");
-
-        assertFalse(returnVal);
+        assertThrows(ProductNotFoundException.class, () -> productService.delete("NonExistentProduct"));
 
         verify(productRepository).deleteByName("NonExistentProduct");
     }
